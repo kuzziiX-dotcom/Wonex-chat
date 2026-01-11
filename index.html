@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Wonex Digital | Wallet & Games</title>
+    <title>Wonex Digital | Elite Casino & Earnings</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -13,16 +13,20 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <style>
-        :root { --cyan: #00f2ff; --blue: #0062ff; --dark: #020408; --gold: #ffd700; }
+        :root { --cyan: #00f2ff; --blue: #0062ff; --dark: #020408; --pink: #ff0080; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--dark); color: white; overflow-x: hidden; }
         .font-tech { font-family: 'Space Grotesk', sans-serif; }
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .text-neon { color: var(--cyan); text-shadow: 0 0 15px rgba(0, 242, 255, 0.5); }
         .btn-neon { background: linear-gradient(90deg, var(--blue), var(--cyan)); transition: 0.3s; color: black; font-weight: 800; }
         .btn-neon:hover { box-shadow: 0 0 25px var(--cyan); transform: translateY(-2px); }
+        .game-card { background: linear-gradient(145deg, #111827, #020408); border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; cursor: pointer; }
+        .game-card:hover { border-color: var(--cyan); transform: scale(1.02); }
         .hidden { display: none !important; }
-        #wheel { width: 280px; height: 280px; border-radius: 50%; border: 10px solid #1e293b; position: relative; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); }
-        .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #ff0080; z-index: 10; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* Aviator Animation */
+        #aviatorDisplay { background: #0a0f1e; height: 200px; border-radius: 20px; position: relative; overflow: hidden; border: 1px solid #1e293b; }
+        .plane { position: absolute; bottom: 10px; left: 10px; width: 35px; transition: 0.1s linear; }
     </style>
 </head>
 <body onload="initApp()">
@@ -31,102 +35,112 @@
     <section id="page-auth" class="min-h-screen flex items-center justify-center p-6 bg-[radial-gradient(circle_at_center,_#112244_0%,_transparent_100%)]">
         <div class="glass w-full max-w-md p-10 rounded-[3rem] text-center border-cyan-500/20 shadow-2xl">
             <img src="https://res.cloudinary.com/deljgkppf/image/upload/v1768149492/White_Black_Illustrative_Esport_Logo_20251230_112717_0000_zgm2cl.png" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg shadow-cyan-500/20">
-            <h1 class="font-tech text-3xl font-black mb-2 uppercase italic tracking-tighter">WONEX <span class="text-neon">WALLET</span></h1>
+            <h1 class="font-tech text-3xl font-black mb-2 uppercase italic tracking-tighter">WONEX <span class="text-neon">DIGITAL</span></h1>
             
             <div class="flex mb-8 bg-white/5 rounded-2xl p-1 mt-6">
                 <button id="signupTab" onclick="toggleTab('signup')" class="flex-1 py-3 text-xs font-bold rounded-xl btn-neon transition uppercase">Register</button>
                 <button id="loginTab" onclick="toggleTab('login')" class="flex-1 py-3 text-xs font-bold rounded-xl transition uppercase">Login</button>
             </div>
 
-            <div id="signupForm" class="space-y-4">
+            <!-- Signup Form -->
+            <div id="signupForm" class="space-y-4 text-left">
                 <input type="text" id="sName" placeholder="Full Name" class="w-full p-4 bg-white/5 border border-white/10 rounded-xl outline-none focus:border-cyan-400 text-sm">
                 <input type="email" id="sEmail" placeholder="Email Address" class="w-full p-4 bg-white/5 border border-white/10 rounded-xl outline-none focus:border-cyan-400 text-sm">
-                <input type="password" id="sPass" placeholder="Password" class="w-full p-4 bg-white/5 border border-white/10 rounded-xl outline-none focus:border-cyan-400 text-sm">
-                <button onclick="handleAuth('signup')" class="w-full btn-neon py-4 rounded-2xl font-black uppercase shadow-xl">Join Now</button>
+                <input type="password" id="sPass" placeholder="Password (Min 6)" class="w-full p-4 bg-white/5 border border-white/10 rounded-xl outline-none focus:border-cyan-400 text-sm">
+                <button onclick="handleAuth('signup')" id="sBtn" class="w-full btn-neon py-4 rounded-2xl font-black uppercase tracking-widest active:scale-95 transition shadow-xl">Get Rs. 100 Bonus</button>
             </div>
 
-            <div id="loginForm" class="space-y-4 hidden">
+            <!-- Login Form -->
+            <div id="loginForm" class="space-y-4 text-left hidden">
                 <input type="email" id="lEmail" placeholder="Email Address" class="w-full p-4 bg-white/5 border border-white/10 rounded-xl outline-none focus:border-cyan-400 text-sm">
                 <input type="password" id="lPass" placeholder="Password" class="w-full p-4 bg-white/5 border border-white/10 rounded-xl outline-none focus:border-cyan-400 text-sm">
-                <button onclick="handleAuth('login')" class="w-full btn-neon py-4 rounded-2xl font-black uppercase shadow-xl">Sign In</button>
+                <button onclick="handleAuth('login')" id="lBtn" class="w-full btn-neon py-4 rounded-2xl font-black uppercase tracking-widest">Sign In</button>
             </div>
+            <p id="authMsg" class="text-red-400 text-[10px] mt-4 font-bold uppercase hidden"></p>
         </div>
     </section>
 
     <!-- MAIN APP -->
     <div id="main-app" class="hidden min-h-screen flex flex-col pb-20">
         <nav class="p-4 glass sticky top-0 z-50 flex justify-between items-center px-4 md:px-12 border-b border-white/5">
-            <h1 class="font-tech text-xl font-bold italic">WONEX <span class="text-neon">DIGITAL</span></h1>
-            <div class="flex items-center gap-3">
-                <div class="bg-cyan-500/10 text-cyan-400 px-4 py-1.5 rounded-full text-[11px] font-black border border-cyan-500/20">
+            <div class="flex flex-col">
+                <h1 class="font-tech text-lg font-bold italic tracking-tighter">WONEX <span class="text-neon">DIGITAL</span></h1>
+                <p class="text-[9px] text-cyan-400 font-bold uppercase tracking-widest">ID: <span id="displayID">--------</span></p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="bg-yellow-500/10 text-yellow-400 px-4 py-2 rounded-full text-sm font-black border border-yellow-500/20">
                     Rs. <span id="userBalance">0.00</span>
                 </div>
-                <div onclick="navigateTo('wallet')" class="w-9 h-9 glass rounded-full flex items-center justify-center cursor-pointer"><i class="fas fa-wallet text-cyan-400"></i></div>
-                <button onclick="signOut()" class="text-red-500 text-xs"><i class="fas fa-sign-out-alt"></i></button>
+                <div onclick="navigateTo('wallet')" class="w-9 h-9 glass rounded-full flex items-center justify-center cursor-pointer border-white/10 shadow-lg"><i class="fas fa-wallet text-cyan-400"></i></div>
             </div>
         </nav>
 
-        <!-- DASHBOARD / GAMES -->
-        <main id="view-home" class="p-6 max-w-4xl mx-auto w-full space-y-10">
-            <div class="text-center py-6">
-                <h2 class="text-3xl font-black text-pink-500 italic uppercase italic">Lucky Win Wheel</h2>
-                <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-2">Spin cost: Rs. 20.00</p>
+        <!-- DASHBOARD / GAMES LIST -->
+        <main id="view-home" class="p-6 max-w-5xl mx-auto w-full grid grid-cols-2 gap-4">
+            <div onclick="openGame('aviator')" class="game-card p-6 rounded-[2rem] text-center">
+                <i class="fas fa-plane-departure text-4xl text-pink-500 mb-3"></i>
+                <h3 class="font-tech text-sm font-bold uppercase italic">Aviator</h3>
             </div>
-
-            <div class="relative flex justify-center mb-10">
-                <div class="wheel-pointer"></div>
-                <div id="wheel" style="background: conic-gradient(#ff0080 0deg 45deg, #00f2ff 45deg 90deg, #ffd700 90deg 135deg, #0062ff 135deg 180deg, #ff0080 180deg 225deg, #00f2ff 225deg 270deg, #ffd700 270deg 315deg, #0062ff 315deg 360deg);">
-                    <div class="absolute inset-0 flex items-center justify-center font-black text-black text-[10px]">
-                        <span class="rotate-[22deg] absolute translate-y-[-90px]">Rs.10</span>
-                        <span class="rotate-[67deg] absolute translate-y-[-90px]">Rs.50</span>
-                        <span class="rotate-[112deg] absolute translate-y-[-90px]">Rs.0</span>
-                        <span class="rotate-[157deg] absolute translate-y-[-90px]">Rs.100</span>
-                    </div>
-                </div>
+            <div onclick="openGame('apple')" class="game-card p-6 rounded-[2rem] text-center">
+                <i class="fas fa-apple-alt text-4xl text-red-500 mb-3"></i>
+                <h3 class="font-tech text-sm font-bold uppercase italic">Apple Fortune</h3>
             </div>
+            <div onclick="openGame('dice')" class="game-card p-6 rounded-[2rem] text-center">
+                <i class="fas fa-dice text-4xl text-blue-500 mb-3"></i>
+                <h3 class="font-tech text-sm font-bold uppercase italic">Dice Roll</h3>
+            </div>
+            <div onclick="openGame('mines')" class="game-card p-6 rounded-[2rem] text-center">
+                <i class="fas fa-bomb text-4xl text-yellow-500 mb-3"></i>
+                <h3 class="font-tech text-sm font-bold uppercase italic">Mines</h3>
+            </div>
+        </main>
 
-            <button onclick="spinWheel()" id="spinBtn" class="w-full max-w-sm mx-auto block btn-neon py-5 rounded-full font-black uppercase tracking-widest shadow-2xl">Spin & Win Now</button>
-            
-            <div class="bg-white/5 p-6 rounded-3xl border border-white/5 text-center">
-                <div class="flex justify-around">
-                    <div><p id="liveCounter" class="text-xl font-black text-cyan-400">1</p><p class="text-[8px] uppercase tracking-widest">Active Players</p></div>
-                    <div><p class="text-xl font-black text-green-400">Rs. 2,500+</p><p class="text-[8px] uppercase tracking-widest">Total Paid</p></div>
+        <!-- GAME VIEW: AVIATOR -->
+        <main id="view-aviator" class="hidden p-6 max-w-xl mx-auto w-full">
+            <div class="flex items-center gap-4 mb-6">
+                <button onclick="navigateTo('home')" class="p-2 glass rounded-full"><i class="fas fa-arrow-left"></i></button>
+                <h2 class="font-tech text-xl font-bold uppercase italic text-pink-500">Aviator</h2>
+            </div>
+            <div id="aviatorDisplay" class="mb-6 flex flex-col items-center justify-center">
+                <h2 id="multiplier" class="text-6xl font-black italic text-white z-10">1.00x</h2>
+                <img id="planeImg" src="https://cdn-icons-png.flaticon.com/512/723/723955.png" class="plane">
+            </div>
+            <div class="glass p-6 rounded-3xl space-y-4">
+                <input type="number" id="betAmt" placeholder="Bet Amount" class="w-full p-4 bg-black border border-white/10 rounded-xl text-center font-bold outline-none">
+                <div class="flex gap-2">
+                    <button onclick="startAviator()" id="betBtn" class="flex-1 py-4 bg-green-600 rounded-xl font-black uppercase italic">Bet</button>
+                    <button onclick="cashOut()" id="cashBtn" class="hidden flex-1 py-4 bg-yellow-500 text-black rounded-xl font-black uppercase italic">Cash Out</button>
                 </div>
             </div>
         </main>
 
         <!-- WALLET VIEW -->
-        <main id="view-wallet" class="hidden p-6 max-w-2xl mx-auto w-full space-y-8">
-            <div class="grid grid-cols-2 gap-4">
-                <button onclick="toggleWalletTab('dep')" class="p-4 glass rounded-2xl font-bold uppercase text-xs">Deposit</button>
-                <button onclick="toggleWalletTab('with')" class="p-4 glass rounded-2xl font-bold uppercase text-xs">Withdraw</button>
+        <main id="view-wallet" class="hidden p-6 max-w-xl mx-auto w-full space-y-6">
+            <div class="glass p-8 rounded-[3rem] border-yellow-500/20">
+                <h3 class="text-yellow-500 font-bold uppercase mb-6 text-center italic tracking-widest text-lg">Deposit Funds</h3>
+                <div class="bg-black/60 p-5 rounded-2xl border border-white/5 mb-6 text-xs space-y-2">
+                    <p>BOC Account: <b>95637863</b></p>
+                    <p>Holder: <b>H.V.M.PEHESARA</b></p>
+                    <p class="text-pink-500 font-black mt-2">REF: Your ID (<span class="displayIDAlt">----</span>)</p>
+                </div>
+                <input type="number" id="depAmount" placeholder="Deposit Amount" class="w-full p-4 bg-white/5 border border-white/10 rounded-xl mb-4 outline-none">
+                <button onclick="submitDeposit()" class="w-full btn-neon py-4 rounded-xl font-black uppercase italic">Submit Request</button>
             </div>
 
-            <!-- Deposit UI -->
-            <div id="depSection" class="space-y-6">
-                <div class="glass p-8 rounded-[3rem] border-yellow-500/20">
-                    <h3 class="text-yellow-500 font-bold uppercase mb-4 text-center">Add Funds (BOC)</h3>
-                    <div class="bg-black p-5 rounded-2xl mb-6 text-xs border border-white/5">
-                        <p>Number: <b>95637863</b></p>
-                        <p>Name: <b>H.V.M.PEHESARA</b></p>
-                    </div>
-                    <input type="number" id="depAmount" placeholder="Amount (Rs)" class="w-full p-4 bg-white/5 border border-white/10 rounded-xl mb-4 text-sm">
-                    <label class="block p-8 border-2 border-dashed border-white/10 rounded-2xl text-center cursor-pointer mb-6">
-                        <input type="file" id="depSlip" class="hidden" onchange="handleSlip(this)">
-                        <div id="slipName" class="text-[10px] uppercase opacity-50">Upload Payment Slip</div>
-                    </label>
-                    <button onclick="submitDeposit()" class="w-full btn-neon py-4 rounded-xl font-black uppercase text-xs">Submit Deposit</button>
-                </div>
+            <div class="glass p-8 rounded-[3rem] border-pink-500/20">
+                <h3 class="text-pink-500 font-bold uppercase mb-6 text-center italic tracking-widest text-lg">Withdraw Money</h3>
+                <input type="number" id="withAmount" placeholder="Amount (Min Rs. 500)" class="w-full p-4 bg-white/5 border border-white/10 rounded-xl mb-4 outline-none">
+                <textarea id="withDetails" placeholder="Your Bank Account details..." class="w-full p-4 bg-white/5 border border-white/10 rounded-xl mb-4 text-xs" rows="3"></textarea>
+                <button onclick="submitWithdraw()" class="w-full bg-pink-600 py-4 rounded-xl font-black uppercase italic shadow-lg">Cash Out</button>
             </div>
+        </main>
 
-            <!-- Withdraw UI -->
-            <div id="withSection" class="hidden space-y-6">
-                <div class="glass p-8 rounded-[3rem] border-pink-500/20">
-                    <h3 class="text-pink-500 font-bold uppercase mb-4 text-center">Cashout Money</h3>
-                    <input type="number" id="withAmount" placeholder="Amount (Min Rs.500)" class="w-full p-4 bg-white/5 border border-white/10 rounded-xl mb-4 text-sm">
-                    <textarea id="withDetails" placeholder="Bank Name, Acc Number, Branch & Your Name" class="w-full p-4 bg-white/5 border border-white/10 rounded-xl mb-6 text-sm" rows="3"></textarea>
-                    <button onclick="submitWithdraw()" class="w-full btn-neon py-4 rounded-xl font-black uppercase text-xs">Request Cashout</button>
-                </div>
+        <!-- PROFILE -->
+        <main id="view-profile" class="hidden flex-grow flex items-center justify-center p-6">
+            <div class="glass w-full max-w-md p-10 rounded-[3rem] text-center border-white/10 relative">
+                <img id="profAvatar" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="w-24 h-24 mx-auto mb-6 rounded-full border-2 border-cyan-500">
+                <h2 id="profName" class="font-tech text-2xl font-bold mb-10 text-neon uppercase italic tracking-tighter">---</h2>
+                <button onclick="signOut()" class="w-full py-4 bg-red-600/10 text-red-500 font-bold rounded-2xl border border-red-500/20 uppercase text-[10px] tracking-widest hover:bg-red-600 hover:text-white transition">Log Out</button>
             </div>
         </main>
     </div>
@@ -145,23 +159,14 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
-        let currentUid = null, balance = 0, slipBase64 = "";
+        let currentUser = null, userBalance = 0, userID = "";
 
         function initApp() {
             auth.onAuthStateChanged(user => {
                 if (user) {
-                    currentUid = user.uid;
-                    database.ref('wonex_users/' + user.uid).on('value', s => {
-                        const data = s.val();
-                        if(data) {
-                            balance = data.balance || 0;
-                            document.getElementById('userBalance').innerText = balance.toFixed(2);
-                            showMain();
-                            trackPresence();
-                        } else {
-                            database.ref('wonex_users/'+user.uid).set({ name: user.displayName || 'Gamer', balance: 0 });
-                        }
-                    });
+                    currentUser = user;
+                    // FIX: Always sync with database after auth check
+                    syncProfile(user);
                 } else {
                     document.getElementById('page-auth').classList.remove('hidden');
                     document.getElementById('main-app').classList.add('hidden');
@@ -169,70 +174,133 @@
             });
         }
 
+        async function syncProfile(user) {
+            database.ref('wonex_users/' + user.uid).on('value', async snap => {
+                const data = snap.val();
+                if(data) {
+                    userBalance = data.balance || 0;
+                    userID = data.id;
+                    document.getElementById('userBalance').innerText = userBalance.toFixed(2);
+                    document.getElementById('displayID').innerText = userID;
+                    document.querySelectorAll('.displayIDAlt').forEach(el => el.innerText = userID);
+                    document.getElementById('profName').innerText = data.name;
+                    showMain();
+                } else {
+                    // Profile creation logic (If not exists in DB)
+                    const idRef = database.ref('global/nextID');
+                    const idSnap = await idRef.transaction(current => (current || 10000000) + 1);
+                    const newID = idSnap.snapshot.val();
+                    
+                    const newProfile = {
+                        name: user.displayName || document.getElementById('sName').value || 'Elite Gamer',
+                        email: user.email,
+                        id: newID,
+                        balance: 100.00, // Sign-up bonus
+                        time: Date.now()
+                    };
+                    await database.ref('wonex_users/' + user.uid).set(newProfile);
+                }
+            });
+        }
+
         async function handleAuth(mode) {
             const email = document.getElementById(mode === 'signup' ? 'sEmail' : 'lEmail').value;
             const pass = document.getElementById(mode === 'signup' ? 'sPass' : 'lPass').value;
+            const btn = document.getElementById(mode === 'signup' ? 'sBtn' : 'lBtn');
+            const msg = document.getElementById('authMsg');
+
+            if(!email || pass.length < 6) return alert("Valid Email & 6+ Password required!");
+            
+            btn.innerText = "Processing..."; btn.disabled = true;
             try {
                 if(mode === 'signup') {
-                    const name = document.getElementById('sName').value;
-                    const res = await auth.createUserWithEmailAndPassword(email, pass);
-                    await database.ref('wonex_users/' + res.user.uid).set({ name, email, balance: 0 });
-                } else { await auth.signInWithEmailAndPassword(email, pass); }
-            } catch (err) { alert(err.message); }
+                    await auth.createUserWithEmailAndPassword(email, pass);
+                } else {
+                    await auth.signInWithEmailAndPassword(email, pass);
+                }
+            } catch (err) {
+                msg.innerText = err.message;
+                msg.classList.remove('hidden');
+                btn.innerText = mode === 'signup' ? 'Register' : 'Sign In';
+                btn.disabled = false;
+            }
         }
 
-        function spinWheel() {
-            if(balance < 20) return alert("Min Rs. 20 required!");
-            database.ref('wonex_users/'+currentUid).update({ balance: balance - 20 });
+        // --- GAME: AVIATOR LOGIC ---
+        let gameRunning = false, multiplier = 1.0, crashAt = 0, currentBet = 0, gameTimer = null;
+
+        function startAviator() {
+            currentBet = parseFloat(document.getElementById('betAmt').value);
+            if(currentBet > userBalance || currentBet < 10) return alert("Minimum Bet Rs.10");
+
+            gameRunning = true; multiplier = 1.0;
+            crashAt = (Math.random() * 5 + 1.1).toFixed(2);
             
-            const deg = 3600 + Math.floor(Math.random() * 3600);
-            document.getElementById('wheel').style.transform = `rotate(${deg}deg)`;
+            database.ref('wonex_users/'+currentUser.uid).update({ balance: userBalance - currentBet });
+            
+            document.getElementById('betBtn').classList.add('hidden');
+            document.getElementById('cashBtn').classList.remove('hidden');
+            
+            gameTimer = setInterval(() => {
+                multiplier += 0.05;
+                document.getElementById('multiplier').innerText = multiplier.toFixed(2) + "x";
+                document.getElementById('planeImg').style.bottom = (multiplier * 25) + "px";
+                document.getElementById('planeImg').style.left = (multiplier * 35) + "px";
 
-            setTimeout(async () => {
-                const actualDeg = deg % 360;
-                let win = 0;
-                if(actualDeg >= 0 && actualDeg < 45) win = 10;
-                else if(actualDeg >= 45 && actualDeg < 90) win = 50;
-                else if(actualDeg >= 135 && actualDeg < 180) win = 100;
-                
-                await database.ref('wonex_users/'+currentUid).update({ balance: balance + win });
-                alert(win > 0 ? `YOU WON RS. ${win}!` : "TRY AGAIN!");
-            }, 4000);
+                if(multiplier >= crashAt) endAviator(false);
+            }, 100);
         }
 
-        function handleSlip(i) {
-            const r = new FileReader(); r.onload = e => {
-                slipBase64 = e.target.result;
-                document.getElementById('slipName').innerText = "Slip Selected ✅";
-            };
-            r.readAsDataURL(i.files[0]);
+        function cashOut() {
+            if(!gameRunning) return;
+            const win = currentBet * multiplier;
+            endAviator(true, win);
         }
 
+        async function endAviator(win, amount = 0) {
+            gameRunning = false;
+            clearInterval(gameTimer);
+            document.getElementById('betBtn').classList.remove('hidden');
+            document.getElementById('cashBtn').classList.add('hidden');
+
+            if(win) {
+                await database.ref('wonex_users/'+currentUser.uid).update({ balance: userBalance + amount });
+                alert(`WIN! Cashed out at ${multiplier.toFixed(2)}x. Won Rs. ${amount.toFixed(2)}`);
+            } else {
+                document.getElementById('multiplier').classList.add('text-red-500');
+                setTimeout(() => {
+                    document.getElementById('multiplier').classList.remove('text-red-500');
+                    document.getElementById('multiplier').innerText = "1.00x";
+                    document.getElementById('planeImg').style.bottom = "10px";
+                    document.getElementById('planeImg').style.left = "10px";
+                }, 2000);
+            }
+        }
+
+        // --- WALLET ---
         async function submitDeposit() {
             const amt = document.getElementById('depAmount').value;
-            if(!amt || !slipBase64) return alert("Amount and Slip required!");
-            await database.ref('deposits').push({ uid: currentUid, name: auth.currentUser.email, amount: parseFloat(amt), slip: slipBase64, status: 'Pending', time: Date.now() });
-            alert("Deposit Submitted! Admin will verify soon.");
-            location.reload();
+            if(amt < 100) return alert("Min Rs. 100");
+            await database.ref('deposits').push({ uid: currentUser.uid, id: userID, amount: amt, status: 'Pending', time: Date.now() });
+            alert("Deposit Request Sent! Wait for Admin Verification.");
         }
 
         async function submitWithdraw() {
             const amt = document.getElementById('withAmount').value;
             const det = document.getElementById('withDetails').value;
-            if(amt < 500 || balance < amt) return alert("Check balance or amount (Min 500)!");
-            await database.ref('withdrawals').push({ uid: currentUid, amount: parseFloat(amt), details: det, status: 'Pending', time: Date.now() });
-            await database.ref('wonex_users/'+currentUid).update({ balance: balance - parseFloat(amt) });
-            alert("Withdrawal Requested!");
+            if(amt < 500 || userBalance < amt) return alert("Insufficient Balance or Min. Rs. 500");
+            await database.ref('withdrawals').push({ uid: currentUser.uid, amount: amt, details: det, status: 'Pending', time: Date.now() });
+            await database.ref('wonex_users/'+currentUser.uid).update({ balance: userBalance - amt });
+            alert("Cashout Request Sent!");
         }
 
-        function toggleWalletTab(t) {
-            document.getElementById('depSection').classList.toggle('hidden', t !== 'dep');
-            document.getElementById('withSection').classList.toggle('hidden', t !== 'with');
-        }
-        function navigateTo(v) { ['home', 'wallet', 'profile'].forEach(id => document.getElementById('view-'+id).classList.add('hidden')); document.getElementById('view-'+v).classList.remove('hidden'); }
-        function trackPresence() { const r = database.ref('presence').push(true); r.onDisconnect().remove(); database.ref('presence').on('value', s => document.getElementById('liveCounter').innerText = s.numChildren()); }
+        // --- HELPERS ---
+        function navigateTo(v) { ['home', 'aviator', 'wallet', 'profile'].forEach(id => document.getElementById('view-'+id).classList.add('hidden')); document.getElementById('view-'+v).classList.remove('hidden'); }
+        function openGame(g) { navigateTo(g); }
+        function toggleTab(m) { document.getElementById('signupForm').classList.toggle('hidden', m === 'login'); document.getElementById('loginForm').classList.toggle('hidden', m === 'signup'); }
         function showMain() { document.getElementById('page-auth').classList.add('hidden'); document.getElementById('main-app').classList.remove('hidden'); }
         function signOut() { auth.signOut().then(() => location.reload()); }
+        function closeModal() { document.getElementById('orderModal').classList.add('hidden'); }
     </script>
 </body>
 </html>
