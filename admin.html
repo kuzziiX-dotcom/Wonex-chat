@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wonex Admin | Master Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body { background-color: #020617; color: white; font-family: 'Poppins', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .active-tab { background: #00f2ff; color: black; font-weight: bold; border-radius: 8px; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="p-6">
+
+    <!-- Login -->
+    <div id="auth" class="fixed inset-0 bg-black flex items-center justify-center z-[500]">
+        <div class="glass-card p-10 rounded-[2rem] text-center w-80">
+            <h2 class="mb-6 font-bold uppercase">Master Access</h2>
+            <input type="password" id="pass" class="w-full p-4 bg-gray-900 border border-white/10 rounded-xl text-center mb-6 outline-none">
+            <button onclick="login()" class="w-full py-4 bg-cyan-400 text-black font-bold rounded-xl">Unlock</button>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="panel" class="hidden">
+        <header class="flex justify-between items-center mb-10">
+            <h1 class="text-2xl font-black text-cyan-400 uppercase italic">Wonex Admin Center</h1>
+            <div class="flex gap-4">
+                <button onclick="switchTab('dep')" id="btn-dep" class="px-6 py-2 active-tab">Deposits</button>
+                <button onclick="switchTab('with')" id="btn-with" class="px-6 py-2">Withdrawals</button>
+            </div>
+        </header>
+
+        <!-- Deposits Section -->
+        <main id="tab-dep" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Deposit Cards -->
+        </main>
+
+        <!-- Withdrawals Section -->
+        <main id="tab-with" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Withdrawal Cards -->
+        </main>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHP6jCiOZ3yBTMogJ-8lGWb26U_SfeXts",
+            authDomain: "lochi-creation-bc929.firebaseapp.com",
+            databaseURL: "https://wonexai-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "lochi-creation-bc929",
+            storageBucket: "lochi-creation-bc929.firebasestorage.app",
+            messagingSenderId: "636349455142",
+            appId: "1:636349455142:web:01964aef83ad25fb59ffe7"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        function login() { if(document.getElementById('pass').value === 'lochi2026') { document.getElementById('auth').classList.add('hidden'); document.getElementById('panel').classList.remove('hidden'); loadData(); } }
+
+        function switchTab(t) {
+            document.getElementById('tab-dep').classList.toggle('hidden', t !== 'dep');
+            document.getElementById('tab-with').classList.toggle('hidden', t !== 'with');
+            document.getElementById('btn-dep').classList.toggle('active-tab', t === 'dep');
+            document.getElementById('btn-with').classList.toggle('active-tab', t === 'with');
+        }
+
+        function loadData() {
+            // Load Deposits
+            database.ref('deposits').orderByChild('status').equalTo('Pending').on('value', s => {
+                const data = s.val(); const cont = document.getElementById('tab-dep');
+                cont.innerHTML = data ? Object.entries(data).map(([id, d]) => `
+                <div class="glass-card p-6 rounded-3xl space-y-4">
+                    <img src="${d.slip}" class="h-48 w-full object-contain rounded-xl bg-black">
+                    <p class="text-sm font-bold">Amt: Rs. ${d.amount}</p>
+                    <p class="text-[10px] opacity-50">${d.name}</p>
+                    <div class="flex gap-2">
+                        <button onclick="approveDep('${id}', '${d.uid}', ${d.amount})" class="flex-1 bg-green-600 py-2 rounded-lg font-bold text-xs">APPROVE</button>
+                        <button onclick="database.ref('deposits/${id}').remove()" class="bg-red-600 px-3 rounded-lg"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`).join('') : "<p class='col-span-full opacity-20 text-center'>No pending deposits.</p>";
+            });
+
+            // Load Withdrawals
+            database.ref('withdrawals').orderByChild('status').equalTo('Pending').on('value', s => {
+                const data = s.val(); const cont = document.getElementById('tab-with');
+                cont.innerHTML = data ? Object.entries(data).map(([id, w]) => `
+                <div class="glass-card p-6 rounded-3xl space-y-4">
+                    <h4 class="text-pink-500 font-bold">Rs. ${w.amount}</h4>
+                    <p class="text-xs bg-black/40 p-4 rounded-xl leading-relaxed">${w.details}</p>
+                    <button onclick="database.ref('withdrawals/${id}').update({status:'Completed'})" class="w-full bg-blue-600 py-2 rounded-lg font-bold">MARK PAID</button>
+                </div>`).join('') : "<p class='col-span-full opacity-20 text-center'>No pending withdrawals.</p>";
+            });
+        }
+
+        async function approveDep(id, uid, amt) {
+            const userRef = database.ref('wonex_users/'+uid);
+            const snap = await userRef.once('value');
+            const currentBal = snap.val().balance || 0;
+            await userRef.update({ balance: currentBal + amt });
+            await database.ref('deposits/'+id).update({ status: 'Approved' });
+            alert("Deposit Approved!");
+        }
+    </script>
+</body>
+</html>
